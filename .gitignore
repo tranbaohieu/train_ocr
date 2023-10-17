@@ -1,3 +1,6 @@
 /weight*
 /.empty
 *.pth
+*/*/__pycache__
+*/__pycache__
+train.log
