@@ -9,6 +9,12 @@ from torch.nn.functional import log_softmax, softmax
 from model.transformerocr import VietOCR
 from model.vocab import Vocab
 from model.beam import Beam
+from straug.process import Posterize, AutoContrast, Sharpness
+from straug.blur import MotionBlur
+from straug.camera import Pixelate, Contrast, Brightness, JpegCompression
+from straug.weather import Shadow, Fog
+import random
+
 
 def batch_translate_beam_search(img, model, beam_size=4, candidates=1, max_seq_length=128, sos_token=1, eos_token=2):
     # img: NxCxHxW
@@ -248,20 +254,22 @@ def resize(w, h, expected_height, image_min_width, image_max_width):
 
     return new_w, expected_height
 
-def process_image(image, image_height, image_min_width, image_max_width):
+def process_image(image, image_height, image_min_width, image_max_width, aug=True):
     img = image.convert('RGB')
 
     w, h = img.size
     new_w, image_height = resize(w, h, image_height, image_min_width, image_max_width)
 
     img = img.resize((new_w, image_height), Image.ANTIALIAS)
+    if aug and random.random() > 0.1:
+        img = augument(img)
 
     img = np.asarray(img).transpose(2,0, 1)
     img = img/255
     return img
 
 def process_input(image, image_height, image_min_width, image_max_width):
-    img = process_image(image, image_height, image_min_width, image_max_width)
+    img = process_image(image, image_height, image_min_width, image_max_width, aug=False)
     img = img[np.newaxis, ...]
     img = torch.FloatTensor(img)
     return img
@@ -278,3 +286,24 @@ def predict(filename, config):
     
     return s
 
+def augument(image):
+    if random.random() < 0.1:
+        return MotionBlur()(image, mag=random.choice(range(-10,10)))
+    elif 0.1 <= random.random() < 0.2:
+        return Fog()(image, mag=random.choice(range(-10,10)))
+    elif 0.2 <= random.random() < 0.3:
+        return Posterize()(image, mag=random.choice(range(-10,10)))
+    elif 0.3 <= random.random() < 0.4:
+        return AutoContrast()(image, mag=random.choice(range(-10,10)))
+    elif 0.4 <= random.random() < 0.5:
+        return Shadow()(image, mag=random.choice(range(-10,10)))
+    elif 0.5 <= random.random() < 0.6:
+        return Pixelate()(image, mag=random.choice(range(-10,10)))
+    elif 0.6 <= random.random() < 0.7:
+        return Contrast()(image, mag=random.choice(range(-10,10)))
+    elif 0.7 <= random.random() < 0.8:
+        return Brightness()(image, mag=random.choice(range(-10,10)))
+    elif 0.8 <= random.random() < 0.9:
+        return JpegCompression()(image, mag=random.choice(range(-10,10)))
+    else:
+        return Sharpness()(image, mag=random.choice(range(-10,10)))

@@ -10,6 +10,7 @@ from collections import defaultdict
 import math
 from prefetch_generator import background
 
+
 class BucketData(object):
     def __init__(self, device):
         self.max_label_len = 0
@@ -109,19 +110,11 @@ class DataGenV2(object):
                 label_filename = "train_labels.txt"
             else:
                 label_filename = "val_labels.txt"
-            label_path = os.path.join(data_root, label_filename)
-            syn_data = False
-            if not os.path.exists(label_path):
-                label_path = os.path.join(data_root, "labels.txt")
-                syn_data = True
-            lines = open(label_path, 'r').readlines()[:-1]
+            lines = open(os.path.join(data_root, label_filename), 'r').readlines()[:-1]
             for line in lines:
                 # try:
                 image_name, label = line.strip().split(maxsplit=1)
                 label = label.strip()
-                label = label.replace("”", "\"")
-                if syn_data:
-                    image_name = os.path.join(data_root, image_name)
                 self.image_path_list.append(image_name)
                 self.label_list.append(label)
         self.nSamples = len(self.image_path_list)
@@ -144,11 +137,8 @@ class DataGenV2(object):
             
             img_path, lex = self.image_path_list[i], self.label_list[i]
             
-            try:
-                img_bw, word = self.read_data(img_path, lex)
-            except IOError:
-                print('ioread image:{}'.format(img_path))
-                
+            img_bw, word = self.read_data(img_path, lex)
+            
             width = img_bw.shape[-1]
 
             bs = self.bucket_data[width].append(img_bw, word, img_path)
@@ -168,7 +158,7 @@ class DataGenV2(object):
         
         with open(img_path, 'rb') as img_file:
             img = Image.open(img_file).convert('RGB')
-            img_bw = process_image(img, self.image_height, self.image_min_width, self.image_max_width)
+            img_bw = process_image(img, self.image_height, self.image_min_width, self.image_max_width, aug=False)
         
         word = self.vocab.encode(lex)
 
