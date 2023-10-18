@@ -130,16 +130,16 @@ class Trainer():
 
             if self.valid_annotation and self.iter % self.valid_every == 0:
                 # val_loss = self.validate()
-                acc_full_seq, acc_per_char = self.precision(self.metrics)
+                acc_full_seq, acc_per_char, acc_lev_score = self.precision(self.metrics)
 
-                info = 'iter: {:06d} - acc full seq: {:.4f} - acc per char: {:.4f}'.format(self.iter, acc_full_seq, acc_per_char)
+                info = 'iter: {:06d} - acc full seq: {:.4f} - acc per char: {:.4f} - acc lev score: {:.4f}'.format(self.iter, acc_full_seq, acc_per_char, acc_lev_score)
                 print(info)
                 self.logger.log(info)
 
-                if acc_full_seq > best_acc:
-                    name_checkpoint = 'vgg_seq2seq_{:.4f}.pth'.format(acc_full_seq)
+                if acc_lev_score > best_acc:
+                    name_checkpoint = 'vgg_seq2seq_{:.4f}.pth'.format(acc_lev_score)
                     self.save_weights(os.path.join(self.export_weights, name_checkpoint))
-                    best_acc = acc_full_seq
+                    best_acc = acc_lev_score
 
             
     def validate(self):
@@ -204,8 +204,9 @@ class Trainer():
 
         acc_full_seq = compute_accuracy(actual_sents, pred_sents, mode='full_sequence')
         acc_per_char = compute_accuracy(actual_sents, pred_sents, mode='per_char')
+        acc_lev_score = compute_accuracy(actual_sents, pred_sents, mode='lev_score')
     
-        return acc_full_seq, acc_per_char
+        return acc_full_seq, acc_per_char, acc_lev_score
     
     def visualize_prediction(self, sample=16, errorcase=False, fontname='serif', fontsize=16):
         
