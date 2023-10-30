@@ -86,6 +86,7 @@ class Trainer():
         self.train_gen = self.data_gen_v2(data_root=self.data_root, train=True)
         if self.valid_annotation:
             self.valid_gen = self.data_gen_v2(data_root=self.data_root_test, train=False)
+            self.test_gen = self.data_gen_v2(data_root=["./OCR/public_test"], train=False)
 
         self.train_losses = []
         
@@ -95,6 +96,7 @@ class Trainer():
         total_loader_time = 0
         total_gpu_time = 0
         best_acc = 0
+        best_score = 0
 
         data_iter = self.train_gen.gen(batch_size=self.batch_size)
         for i in range(self.num_iters):
@@ -130,16 +132,23 @@ class Trainer():
 
             if self.valid_annotation and self.iter % self.valid_every == 0:
                 # val_loss = self.validate()
-                acc_full_seq, acc_per_char, acc_lev_score = self.precision(self.metrics)
+                acc_full_seq, acc_per_char, acc_lev_score = self.precision(self.metrics, valid=True)
+                acc_full_seq_test, acc_per_char_test, acc_lev_score_test = self.precision(self.metrics, valid=False)
 
-                info = 'iter: {:06d} - acc full seq: {:.4f} - acc per char: {:.4f} - acc lev score: {:.4f}'.format(self.iter, acc_full_seq, acc_per_char, acc_lev_score)
+                info = 'iter: {:06d} - acc full seq: {:.4f} - acc per char: {:.4f} - acc lev score: {:.4f} - acc full seq test: {:.4f} - acc per char test: {:.4f} - acc lev score test: {:.4f}'.format(self.iter, acc_full_seq, acc_per_char, acc_lev_score, acc_full_seq_test, acc_per_char_test, acc_lev_score_test)
                 print(info)
                 self.logger.log(info)
 
-                if acc_lev_score > best_acc:
-                    name_checkpoint = 'vgg_seq2seq_{:.4f}.pth'.format(acc_lev_score)
+                if acc_lev_score_test > best_score:
+                    name_checkpoint = 'vgg_seq2seq_score_{:.4f}.pth'.format(acc_lev_score_test)
                     self.save_weights(os.path.join(self.export_weights, name_checkpoint))
-                    best_acc = acc_lev_score
+                    best_score = acc_lev_score_test
+
+                if acc_full_seq > best_acc:
+                    name_checkpoint = 'vgg_seq2seq_acc_{:.4f}.pth'.format(acc_full_seq)
+                    self.save_weights(os.path.join(self.export_weights, name_checkpoint))
+                    best_acc = acc_full_seq
+                self.save_weights(os.path.join(self.export_weights, "last.pth"))
 
             
     def validate(self):
@@ -170,12 +179,16 @@ class Trainer():
         
         return total_loss
     
-    def predict(self, sample=None):
+    def predict(self, sample=None, valid=True):
         pred_sents = []
         actual_sents = []
         img_files = []
 
-        self.valid_gen_loader = self.valid_gen.gen(batch_size=self.batch_size)
+        if valid:
+            self.valid_gen_loader = self.valid_gen.gen(batch_size=self.batch_size)
+        else:
+            self.valid_gen_loader = self.test_gen.gen(batch_size=self.batch_size)
+
         for batch in  self.valid_gen_loader:
             batch = self.batch_to_device(batch)
 
@@ -198,9 +211,9 @@ class Trainer():
 
         return pred_sents, actual_sents, img_files, prob
 
-    def precision(self, sample=None):
+    def precision(self, sample=None, valid=True):
 
-        pred_sents, actual_sents, _, _ = self.predict(sample=sample)
+        pred_sents, actual_sents, _, _ = self.predict(sample=sample, valid=valid)
 
         acc_full_seq = compute_accuracy(actual_sents, pred_sents, mode='full_sequence')
         acc_per_char = compute_accuracy(actual_sents, pred_sents, mode='per_char')

@@ -1,7 +1,7 @@
 aug:
   image_aug: true
   masked_language_model: true
-backbone: vgg11_bn
+backbone: vgg19_bn
 cnn:
   hidden: 256
   ks:
@@ -26,18 +26,23 @@ cnn:
     - 1
   - - 1
     - 1
+  dropout: 0.2
 dataloader:
-  num_workers: 3
+  num_workers: 16
   pin_memory: true
 dataset:
   data_root:
-  - /media/hwr/TK/OCR/training_data
-  - /media/hwr/TK/data_syn_ghep
+  - ./OCR/training_data
+  - ./OCR/kalapa_aug
+  - ./kalapa_synth/
+  - ./kalapa_multilines
   data_root_test:
-  - /media/hwr/TK/OCR/training_data
-  image_height: 32
+  - ./OCR/kalapa_aug
+  - ./kalapa_synth/
+  - ./kalapa_multilines
+  image_height: 64
   image_max_width: 1024
-  image_min_width: 32
+  image_min_width: 64
   name: hw
   train_annotation: labels.txt
   valid_annotation: labels.txt
@@ -54,10 +59,10 @@ pretrain:
 quiet: false
 seq_modeling: seq2seq
 trainer:
-  batch_size: 16
-  checkpoint: /media/hwr/TK/vietocr_basecode/vgg_seq2seq_fix.pth
+  batch_size: 32
+  checkpoint: ./vgg_seq2seq_fix.pth
   export: ./weights_kalapa/
-  iters: 2000000
+  iters: 500000
   log: ./train.log
   metrics: 1000
   print_every: 10
@@ -70,4 +75,4 @@ transformer:
   img_channel: 256
 vocab: 'aAàÀảẢãÃáÁạẠăĂằẰẳẲẵẴắẮặẶâÂầẦẩẨẫẪấẤậẬbBcCdDđĐeEèÈẻẺẽẼéÉẹẸêÊềỀểỂễỄếẾệỆfFgGhHiIìÌỉỈĩĨíÍịỊjJkKlLmMnNoOòÒỏỎõÕóÓọỌôÔồỒổỔỗỖốỐộỘơƠờỜởỞỡỠớỚợỢpPqQrRsStTuUùÙủỦũŨúÚụỤưƯừỪửỬữỮứỨựỰvVwWxXyYỳỲỷỶỹỸýÝỵỴzZ0123456789!"#$%&''()*+,-./:;<=>?@[\]^_`{|}~ '
 # vocab_new: aAàÀảẢãÃáÁạẠăĂằẰẳẲẵẴắẮặẶâÂầẦẩẨẫẪấẤậẬbBcCdDđĐeEèÈẻẺẽẼéÉẹẸêÊềỀểỂễỄếẾệỆfFgGhHiIìÌỉỈĩĨíÍịỊjJkKlLmMnNoOòÒỏỎõÕóÓọỌôÔồỒổỔỗỖốỐộỘơƠờỜởỞỡỠớỚợỢpPqQrRsStTuUùÙủỦũŨúÚụỤưƯừỪửỬữỮứỨựỰvVwWxXyYỳỲỷỶỹỸýÝỵỴzZ0123456789!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
-weights: /media/hwr/TK/vietocr_basecode/vgg_seq2seq_fix.pth
+weights: ./vgg_seq2seq_fix.pth

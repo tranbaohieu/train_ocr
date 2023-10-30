@@ -158,7 +158,10 @@ class DataGenV2(object):
         
         with open(img_path, 'rb') as img_file:
             img = Image.open(img_file).convert('RGB')
-            img_bw = process_image(img, self.image_height, self.image_min_width, self.image_max_width, aug=False)
+            if random.random() > 0.8:
+                w, h = img.size
+                img = img.crop((random.randint(0, 10), random.randint(0, 10), random.randint(int(w-15), int(w)), random.randint(int(h-10), int(h))))
+            img_bw = process_image(img, self.image_height, self.image_min_width, self.image_max_width, aug=self.train)
         
         word = self.vocab.encode(lex)
 

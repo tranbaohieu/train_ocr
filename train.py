@@ -6,12 +6,12 @@ from tool.config import Cfg
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', default='./config.yml', help='see example at ')
-    parser.add_argument('--checkpoint', default="/media/hwr/TK/vietocr_basecode/weights_kalapa/vgg_seq2seq_0.9325.pth", required=False, help='your checkpoint')
+    parser.add_argument('--checkpoint', default='./weights_kalapa/vgg_seq2seq_0.9395.pth', required=False, help='your checkpoint')
 
     args = parser.parse_args()
     config = Cfg.load_config_from_file(args.config)
     # config['vocab'] += '£€¥'
-    config['cnn']['pretrained']=True
+    config['cnn']['pretrained']=False
     trainer = Trainer(config)
 
     if args.checkpoint:

@@ -261,7 +261,7 @@ def process_image(image, image_height, image_min_width, image_max_width, aug=Tru
     new_w, image_height = resize(w, h, image_height, image_min_width, image_max_width)
 
     img = img.resize((new_w, image_height), Image.ANTIALIAS)
-    if aug and random.random() > 0.1:
+    if aug and random.random() > 0.9:
         img = augument(img)
 
     img = np.asarray(img).transpose(2,0, 1)
@@ -288,22 +288,42 @@ def predict(filename, config):
 
 def augument(image):
     if random.random() < 0.1:
+        if random.random() > 0.5:
+            image = Fog()(image, mag=random.choice(range(-10,10)))
         return MotionBlur()(image, mag=random.choice(range(-10,10)))
     elif 0.1 <= random.random() < 0.2:
+        if random.random() > 0.5:
+            image = Brightness()(image, mag=random.choice(range(-10,10)))
         return Fog()(image, mag=random.choice(range(-10,10)))
     elif 0.2 <= random.random() < 0.3:
+        if random.random() > 0.5:
+            image = Fog()(image, mag=random.choice(range(-10,10)))
         return Posterize()(image, mag=random.choice(range(-10,10)))
     elif 0.3 <= random.random() < 0.4:
+        if random.random() > 0.5:
+            image = Brightness()(image, mag=random.choice(range(-10,10)))
         return AutoContrast()(image, mag=random.choice(range(-10,10)))
     elif 0.4 <= random.random() < 0.5:
+        if random.random() > 0.5:
+            image = Brightness()(image, mag=random.choice(range(-10,10)))
         return Shadow()(image, mag=random.choice(range(-10,10)))
     elif 0.5 <= random.random() < 0.6:
+        if random.random() > 0.5:
+            image = Shadow()(image, mag=random.choice(range(-10,10)))
         return Pixelate()(image, mag=random.choice(range(-10,10)))
     elif 0.6 <= random.random() < 0.7:
+        if random.random() > 0.5:
+            image = Pixelate()(image, mag=random.choice(range(-10,10)))
         return Contrast()(image, mag=random.choice(range(-10,10)))
     elif 0.7 <= random.random() < 0.8:
+        if random.random() > 0.5:
+            image = Shadow()(image, mag=random.choice(range(-10,10)))
         return Brightness()(image, mag=random.choice(range(-10,10)))
     elif 0.8 <= random.random() < 0.9:
+        if random.random() > 0.5:
+            image = Sharpness()(image, mag=random.choice(range(-10,10)))
         return JpegCompression()(image, mag=random.choice(range(-10,10)))
     else:
+        if random.random() > 0.5:
+            image = Brightness()(image, mag=random.choice(range(-10,10)))
         return Sharpness()(image, mag=random.choice(range(-10,10)))
